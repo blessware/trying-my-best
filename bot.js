@@ -1,5 +1,25 @@
-console.log("STARTING BOT...");
+console.log("🚀 BOT STARTING...");
 
-const config = require('./config.json');
+const {
+  Client,
+  GatewayIntentBits,
+  ActivityType
+} = require('discord.js');
 
-console.log("CONFIG LOADED:", config);
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds]
+});
+
+client.once('ready', () => {
+  console.log(`✅ BOT ONLINE as ${client.user.tag}`);
+
+  client.user.setPresence({
+    status: 'dnd',
+    activities: [{
+      name: '@tryingmybest',
+      type: ActivityType.Playing
+    }]
+  });
+});
+
+client.login(process.env.TOKEN);
