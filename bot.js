@@ -23,85 +23,97 @@ client.once('ready', async () => {
   // 🔴 DND STATUS
   client.user.setPresence({
     status: 'dnd',
-    activities: [{ name: '@tryingmybest', type: ActivityType.Playing }]
+    activities: [{
+      name: '@tryingmybest',
+      type: ActivityType.Playing
+    }]
   });
 
-  // 🔐 ACCESS BUTTON
+  // 🔐 ACCESS MESSAGE
   try {
-    const verifyChannel = await client.channels.fetch(config.verifyChannelId);
+    const channel = await client.channels.fetch(config.verifyChannelId);
 
-    const verifyEmbed = new EmbedBuilder()
-      .setColor("#0a0a0a")
-      .setTitle("**SERVER ACCESS**")
-      .setDescription("Click below to access the server.")
-      .setFooter({ text: "@tryingmybest" });
+    if (!channel || !channel.isTextBased()) {
+      console.log("❌ Invalid verify channel");
+    } else {
+      const embed = new EmbedBuilder()
+        .setColor("#0a0a0a")
+        .setTitle("SERVER ACCESS")
+        .setDescription("Click below to access the server.")
+        .setFooter({ text: "@tryingmybest" });
 
-    const verifyRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify_access")
-        .setLabel("Access")
-        .setStyle(ButtonStyle.Secondary)
-    );
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify_access")
+          .setLabel("Access")
+          .setStyle(ButtonStyle.Secondary)
+      );
 
-    await verifyChannel.send({
-      embeds: [verifyEmbed],
-      components: [verifyRow]
-    });
+      await channel.send({ embeds: [embed], components: [row] });
+      console.log("✅ Verify message sent");
+    }
 
-  } catch (e) {
-    console.log("verify error", e);
+  } catch (err) {
+    console.log("verify error:", err.message);
   }
 
   // 🔑 KEY MESSAGE
   try {
-    const keyChannel = await client.channels.fetch(config.keyChannelId);
+    const channel = await client.channels.fetch(config.keyChannelId);
 
-    const keyEmbed = new EmbedBuilder()
-      .setColor("#0a0a0a")
-      .setTitle("**ACCESS KEY**")
-      .setDescription("Use the key below:\n\n||trying||")
-      .setFooter({ text: "@tryingmybest" });
+    if (!channel || !channel.isTextBased()) {
+      console.log("❌ Invalid key channel");
+    } else {
+      const embed = new EmbedBuilder()
+        .setColor("#0a0a0a")
+        .setTitle("ACCESS KEY")
+        .setDescription("Use the key below:\n\n||trying||")
+        .setFooter({ text: "@tryingmybest" });
 
-    await keyChannel.send({ embeds: [keyEmbed] });
+      await channel.send({ embeds: [embed] });
+      console.log("✅ Key message sent");
+    }
 
-  } catch (e) {
-    console.log("key error", e);
+  } catch (err) {
+    console.log("key error:", err.message);
   }
 
-  // 🔔 PING ROLE BUTTONS
+  // 🔔 PING MESSAGE
   try {
-    const pingChannel = await client.channels.fetch(config.pingChannelId);
+    const channel = await client.channels.fetch(config.pingChannelId);
 
-    const pingEmbed = new EmbedBuilder()
-      .setColor("#0a0a0a")
-      .setTitle("**PING ROLES**")
-      .setDescription("Select what you want to be notified for.")
-      .setFooter({ text: "@tryingmybest" });
+    if (!channel || !channel.isTextBased()) {
+      console.log("❌ Invalid ping channel");
+    } else {
+      const embed = new EmbedBuilder()
+        .setColor("#0a0a0a")
+        .setTitle("PING ROLES")
+        .setDescription("Select what you want to be notified for.")
+        .setFooter({ text: "@tryingmybest" });
 
-    const pingRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("ping_upload")
-        .setLabel("Upload Pings")
-        .setStyle(ButtonStyle.Secondary),
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ping_upload")
+          .setLabel("Upload Pings")
+          .setStyle(ButtonStyle.Secondary),
 
-      new ButtonBuilder()
-        .setCustomId("ping_announcement")
-        .setLabel("Announcement Pings")
-        .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId("ping_announcement")
+          .setLabel("Announcement Pings")
+          .setStyle(ButtonStyle.Secondary),
 
-      new ButtonBuilder()
-        .setCustomId("ping_key")
-        .setLabel("Key Changes Pings")
-        .setStyle(ButtonStyle.Secondary)
-    );
+        new ButtonBuilder()
+          .setCustomId("ping_key")
+          .setLabel("Key Changes Pings")
+          .setStyle(ButtonStyle.Secondary)
+      );
 
-    await pingChannel.send({
-      embeds: [pingEmbed],
-      components: [pingRow]
-    });
+      await channel.send({ embeds: [embed], components: [row] });
+      console.log("✅ Ping message sent");
+    }
 
-  } catch (e) {
-    console.log("ping error", e);
+  } catch (err) {
+    console.log("ping error:", err.message);
   }
 });
 
@@ -109,9 +121,9 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isButton()) return;
 
-  const member = await interaction.guild.members.fetch(interaction.user.id);
-
   try {
+    const member = await interaction.guild.members.fetch(interaction.user.id);
+
     // 🔐 ACCESS BUTTON
     if (interaction.customId === "verify_access") {
       if (member.roles.cache.has(config.verifyRoleId)) {
@@ -137,7 +149,12 @@ client.on('interactionCreate', async interaction => {
       const type = interaction.customId.split("_")[1];
       const roleId = config.pingRoles[type];
 
-      if (!roleId) return;
+      if (!roleId) {
+        return interaction.reply({
+          content: "Role not configured.",
+          ephemeral: true
+        });
+      }
 
       if (member.roles.cache.has(roleId)) {
         await member.roles.remove(roleId);
@@ -158,11 +175,11 @@ client.on('interactionCreate', async interaction => {
     }
 
   } catch (err) {
-    console.error(err);
+    console.error("❌ Interaction error:", err.message);
 
     if (!interaction.replied) {
       interaction.reply({
-        content: "Error occurred.",
+        content: "Something went wrong.",
         ephemeral: true
       });
     }
