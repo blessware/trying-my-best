@@ -11,7 +11,10 @@ const {
 const config = require('./config.json');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers
+  ]
 });
 
 client.once('clientReady', async () => {
@@ -28,7 +31,7 @@ client.once('clientReady', async () => {
     const channel = await client.channels.fetch(config.verifyChannelId);
 
     if (!channel || !channel.isTextBased()) {
-      console.log("❌ Invalid channel");
+      console.log("❌ Invalid verify channel");
       return;
     }
 
@@ -57,7 +60,7 @@ client.once('clientReady', async () => {
   }
 });
 
-// BUTTON HANDLER
+// 🎯 BUTTON HANDLER
 client.on('interactionCreate', async interaction => {
   if (!interaction.isButton()) return;
 
