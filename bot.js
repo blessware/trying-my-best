@@ -96,7 +96,7 @@ client.once('clientReady', async () => {
         const embed = new EmbedBuilder()
           .setColor("#0a0a0a")
           .setTitle("**ACCESS KEY**")
-          .setDescription("**KEY**\n||**trying**||")
+          .setDescription("**KEY** - ||**trying**||")
           .setFooter({ text: "@tryingmybest" });
 
         await channel.send({ embeds: [embed] });
