@@ -34,25 +34,38 @@ client.once('clientReady', async () => {
     if (!channel || !channel.isTextBased()) {
       console.log("❌ Invalid verify channel");
     } else {
-      const embed = new EmbedBuilder()
-        .setColor("#0a0a0a")
-        .setTitle("**SERVER ACCESS**")
-        .setDescription("Click below to access the server.")
-        .setFooter({ text: "@tryingmybest" });
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("verify_access")
-          .setLabel("ACCESS")
-          .setStyle(ButtonStyle.Secondary)
+      const messages = await channel.messages.fetch({ limit: 10 });
+      const exists = messages.find(m =>
+        m.author.id === client.user.id &&
+        m.embeds.length &&
+        m.embeds[0].title === "**SERVER ACCESS**"
       );
 
-      await channel.send({
-        embeds: [embed],
-        components: [row]
-      });
+      if (exists) {
+        console.log("⏭️ Access message already exists");
+      } else {
 
-      console.log("✅ Access message sent");
+        const embed = new EmbedBuilder()
+          .setColor("#0a0a0a")
+          .setTitle("**SERVER ACCESS**")
+          .setDescription("Click below to access the server.")
+          .setFooter({ text: "@tryingmybest" });
+
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("verify_access")
+            .setLabel("ACCESS")
+            .setStyle(ButtonStyle.Secondary)
+        );
+
+        await channel.send({
+          embeds: [embed],
+          components: [row]
+        });
+
+        console.log("✅ Access message sent");
+      }
     }
 
   } catch (err) {
@@ -68,15 +81,28 @@ client.once('clientReady', async () => {
     if (!channel || !channel.isTextBased()) {
       console.log("❌ Invalid key channel");
     } else {
-      const embed = new EmbedBuilder()
-        .setColor("#0a0a0a")
-        .setTitle("**ACCESS KEY**")
-        .setDescription("**KEY**\n\n||**trying**||")
-        .setFooter({ text: "@tryingmybest" });
 
-      await channel.send({ embeds: [embed] });
+      const messages = await channel.messages.fetch({ limit: 10 });
+      const exists = messages.find(m =>
+        m.author.id === client.user.id &&
+        m.embeds.length &&
+        m.embeds[0].title === "**ACCESS KEY**"
+      );
 
-      console.log("✅ Key message sent");
+      if (exists) {
+        console.log("⏭️ Key message already exists");
+      } else {
+
+        const embed = new EmbedBuilder()
+          .setColor("#0a0a0a")
+          .setTitle("**ACCESS KEY**")
+          .setDescription("**KEY**\n||**trying**||")
+          .setFooter({ text: "@tryingmybest" });
+
+        await channel.send({ embeds: [embed] });
+
+        console.log("✅ Key message sent");
+      }
     }
 
   } catch (err) {
@@ -92,35 +118,48 @@ client.once('clientReady', async () => {
     if (!channel || !channel.isTextBased()) {
       console.log("❌ Invalid ping channel");
     } else {
-      const embed = new EmbedBuilder()
-        .setColor("#0a0a0a")
-        .setTitle("**PING ROLES**")
-        .setDescription("Select what you want to be notified for.")
-        .setFooter({ text: "@tryingmybest" });
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("ping_upload")
-          .setLabel("Upload Pings")
-          .setStyle(ButtonStyle.Secondary),
-
-        new ButtonBuilder()
-          .setCustomId("ping_announcement")
-          .setLabel("Announcement Pings")
-          .setStyle(ButtonStyle.Secondary),
-
-        new ButtonBuilder()
-          .setCustomId("ping_key")
-          .setLabel("Key Changes Pings")
-          .setStyle(ButtonStyle.Secondary)
+      const messages = await channel.messages.fetch({ limit: 10 });
+      const exists = messages.find(m =>
+        m.author.id === client.user.id &&
+        m.embeds.length &&
+        m.embeds[0].title === "**PING ROLES**"
       );
 
-      await channel.send({
-        embeds: [embed],
-        components: [row]
-      });
+      if (exists) {
+        console.log("⏭️ Ping message already exists");
+      } else {
 
-      console.log("✅ Ping message sent");
+        const embed = new EmbedBuilder()
+          .setColor("#0a0a0a")
+          .setTitle("**PING ROLES**")
+          .setDescription("Select what you want to be notified for.")
+          .setFooter({ text: "@tryingmybest" });
+
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("ping_upload")
+            .setLabel("Upload Pings")
+            .setStyle(ButtonStyle.Secondary),
+
+          new ButtonBuilder()
+            .setCustomId("ping_announcement")
+            .setLabel("Announcement Pings")
+            .setStyle(ButtonStyle.Secondary),
+
+          new ButtonBuilder()
+            .setCustomId("ping_key")
+            .setLabel("Key Changes Pings")
+            .setStyle(ButtonStyle.Secondary)
+        );
+
+        await channel.send({
+          embeds: [embed],
+          components: [row]
+        });
+
+        console.log("✅ Ping message sent");
+      }
     }
 
   } catch (err) {
@@ -128,14 +167,13 @@ client.once('clientReady', async () => {
   }
 });
 
-// 🎯 BUTTON HANDLER
+// 🎯 BUTTON HANDLER (UNCHANGED)
 client.on('interactionCreate', async interaction => {
   if (!interaction.isButton()) return;
 
   try {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
-    // 🔐 ACCESS BUTTON
     if (interaction.customId === "verify_access") {
       if (member.roles.cache.has(config.verifyRoleId)) {
         await member.roles.remove(config.verifyRoleId);
@@ -155,7 +193,6 @@ client.on('interactionCreate', async interaction => {
       }
     }
 
-    // 🔔 PING BUTTONS
     if (interaction.customId.startsWith("ping_")) {
       const type = interaction.customId.split("_")[1];
       const roleId = config.pingRoles[type];
