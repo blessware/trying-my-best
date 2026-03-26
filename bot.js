@@ -43,7 +43,7 @@ client.once('clientReady', async () => {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("verify_access")
-          .setLabel("Access")
+          .setLabel("ACCESS")
           .setStyle(ButtonStyle.Secondary)
       );
 
@@ -71,7 +71,7 @@ client.once('clientReady', async () => {
       const embed = new EmbedBuilder()
         .setColor("#0a0a0a")
         .setTitle("**ACCESS KEY**")
-        .setDescription("Key:\n\n||trying||")
+        .setDescription("**KEY**\n\n||**trying**||")
         .setFooter({ text: "@tryingmybest" });
 
       await channel.send({ embeds: [embed] });
