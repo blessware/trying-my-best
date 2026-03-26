@@ -25,6 +25,7 @@ client.once('clientReady', async () => {
     activities: [{ name: '@tryingmybest', type: ActivityType.Playing }]
   });
 
+  // 🔐 ACCESS MESSAGE
   try {
     console.log("Sending access message...");
 
@@ -32,31 +33,98 @@ client.once('clientReady', async () => {
 
     if (!channel || !channel.isTextBased()) {
       console.log("❌ Invalid verify channel");
-      return;
+    } else {
+      const embed = new EmbedBuilder()
+        .setColor("#0a0a0a")
+        .setTitle("**SERVER ACCESS**")
+        .setDescription("Click below to access the server.")
+        .setFooter({ text: "@tryingmybest" });
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify_access")
+          .setLabel("Access")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      await channel.send({
+        embeds: [embed],
+        components: [row]
+      });
+
+      console.log("✅ Access message sent");
     }
 
-    const embed = new EmbedBuilder()
-      .setColor("#0a0a0a")
-      .setTitle("SERVER ACCESS")
-      .setDescription("Click below to access the server.")
-      .setFooter({ text: "@tryingmybest" });
+  } catch (err) {
+    console.log("❌ Verify error:", err.message);
+  }
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("verify_access")
-        .setLabel("Access")
-        .setStyle(ButtonStyle.Secondary)
-    );
+  // 🔑 KEY MESSAGE
+  try {
+    console.log("Sending key message...");
 
-    await channel.send({
-      embeds: [embed],
-      components: [row]
-    });
+    const channel = await client.channels.fetch(config.keyChannelId);
 
-    console.log("✅ Access message sent");
+    if (!channel || !channel.isTextBased()) {
+      console.log("❌ Invalid key channel");
+    } else {
+      const embed = new EmbedBuilder()
+        .setColor("#0a0a0a")
+        .setTitle("**ACCESS KEY**")
+        .setDescription("Key:\n\n||trying||")
+        .setFooter({ text: "@tryingmybest" });
+
+      await channel.send({ embeds: [embed] });
+
+      console.log("✅ Key message sent");
+    }
 
   } catch (err) {
-    console.log("❌ ERROR:", err.message);
+    console.log("❌ Key error:", err.message);
+  }
+
+  // 🔔 PING MESSAGE
+  try {
+    console.log("Sending ping roles...");
+
+    const channel = await client.channels.fetch(config.pingChannelId);
+
+    if (!channel || !channel.isTextBased()) {
+      console.log("❌ Invalid ping channel");
+    } else {
+      const embed = new EmbedBuilder()
+        .setColor("#0a0a0a")
+        .setTitle("**PING ROLES**")
+        .setDescription("Select what you want to be notified for.")
+        .setFooter({ text: "@tryingmybest" });
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ping_upload")
+          .setLabel("Upload Pings")
+          .setStyle(ButtonStyle.Secondary),
+
+        new ButtonBuilder()
+          .setCustomId("ping_announcement")
+          .setLabel("Announcement Pings")
+          .setStyle(ButtonStyle.Secondary),
+
+        new ButtonBuilder()
+          .setCustomId("ping_key")
+          .setLabel("Key Changes Pings")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      await channel.send({
+        embeds: [embed],
+        components: [row]
+      });
+
+      console.log("✅ Ping message sent");
+    }
+
+  } catch (err) {
+    console.log("❌ Ping error:", err.message);
   }
 });
 
@@ -67,6 +135,7 @@ client.on('interactionCreate', async interaction => {
   try {
     const member = await interaction.guild.members.fetch(interaction.user.id);
 
+    // 🔐 ACCESS BUTTON
     if (interaction.customId === "verify_access") {
       if (member.roles.cache.has(config.verifyRoleId)) {
         await member.roles.remove(config.verifyRoleId);
@@ -86,12 +155,42 @@ client.on('interactionCreate', async interaction => {
       }
     }
 
+    // 🔔 PING BUTTONS
+    if (interaction.customId.startsWith("ping_")) {
+      const type = interaction.customId.split("_")[1];
+      const roleId = config.pingRoles[type];
+
+      if (!roleId) {
+        return interaction.reply({
+          content: "Role not configured.",
+          ephemeral: true
+        });
+      }
+
+      if (member.roles.cache.has(roleId)) {
+        await member.roles.remove(roleId);
+
+        return interaction.reply({
+          content: "Role removed.",
+          ephemeral: true
+        });
+
+      } else {
+        await member.roles.add(roleId);
+
+        return interaction.reply({
+          content: "Role added.",
+          ephemeral: true
+        });
+      }
+    }
+
   } catch (err) {
-    console.error("❌ Button error:", err.message);
+    console.error("❌ Interaction error:", err.message);
 
     if (!interaction.replied) {
       interaction.reply({
-        content: "Error occurred.",
+        content: "Something went wrong.",
         ephemeral: true
       });
     }
